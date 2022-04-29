@@ -13,11 +13,41 @@ const { NotImplementedError } = require('../extensions/index.js');
  * transform([1, 2, 3, '--discard-prev', 4, 5]) => [1, 2, 4, 5]
  * 
  */
-function transform(/* arr */) {
-  throw new NotImplementedError('Not implemented');
-  // remove line with error and write your code here
+function transform(arr) {
+  if (!Array.isArray(arr)) throw new Error("'arr' parameter must be an instance of the Array!");
+  let result= [...arr];
+  const deleteCommand = (id) => { result[id]="deleted" }
+  let obj ={
+    "--discard-next": (idx) => {
+      deleteCommand(idx + 1);
+      deleteCommand(idx);
+    },
+    "--discard-prev": (idx) => {
+      deleteCommand(idx -1);
+      deleteCommand(idx);
+    },
+    "--double-next": (idx) =>{
+      if ( (idx< result.length-1) && result[idx + 1] !== "deleted") {
+        result[idx] = result[idx + 1];
+      } else deleteCommand(idx);
+    },
+    "--double-prev": (idx) =>{ 
+      if (idx >1 && result[idx - 1] !== "deleted") {
+        result[idx] = result[idx - 1];
+      } else deleteCommand(idx);
+    }
+  }
+    result.forEach( (item, idx) =>{
+      if (obj[item]) obj[item](idx);
+    } );
+    result = result.filter((item) => item != "deleted");
+
+    return result;
+
 }
 
 module.exports = {
   transform
 };
+
+//[ 1, 2, 3, '--discard-next', 1337, '--double-prev', 4, 5 ]
